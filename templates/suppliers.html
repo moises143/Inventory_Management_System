@@ -1,0 +1,208 @@
+{% extends "base.html" %}
+
+{% block title %}Suppliers - Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-truck me-2"></i>Supplier Management</h1>
+            <p class="text-muted">Manage your suppliers and their contact information</p>
+        </div>
+    </div>
+
+    <!-- Add Supplier Button -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+                <i class="fas fa-plus me-1"></i>Add New Supplier
+            </button>
+        </div>
+    </div>
+
+    <!-- Suppliers Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if suppliers %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Company Name</th>
+                                    <th>Contact Person</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Items Supplied</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for supplier in suppliers %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ supplier.name }}</strong>
+                                        {% if supplier.address %}
+                                        <br><small class="text-muted">{{ supplier.address }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ supplier.contact_person or 'N/A' }}</td>
+                                    <td>
+                                        {% if supplier.email %}
+                                        <a href="mailto:{{ supplier.email }}">{{ supplier.email }}</a>
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if supplier.phone %}
+                                        <a href="tel:{{ supplier.phone }}">{{ supplier.phone }}</a>
+                                        {% else %}
+                                        N/A
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">{{ supplier.items|length }} items</span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary me-1" 
+                                                onclick="editSupplier({{ supplier.id }}, '{{ supplier.name }}', '{{ supplier.contact_person }}', '{{ supplier.email }}', '{{ supplier.phone }}', '{{ supplier.address }}')">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form method="POST" action="{{ url_for('delete_supplier', supplier_id=supplier.id) }}" 
+                                              style="display: inline;" onsubmit="return confirm('Are you sure? This will remove the supplier from all associated items.')">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-truck fa-3x text-muted mb-3"></i>
+                        <h5>No suppliers found</h5>
+                        <p class="text-muted">Start by adding your first supplier.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+                            <i class="fas fa-plus me-1"></i>Add Supplier
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Supplier Modal -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Add New Supplier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_supplier') }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label">Company Name *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="contact_person" class="form-label">Contact Person</label>
+                            <input type="text" class="form-control" id="contact_person" name="contact_person">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="phone" name="phone">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" id="address" name="address" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i>Add Supplier
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Supplier Modal -->
+<div class="modal fade" id="editSupplierModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Supplier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="editSupplierForm">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_name" class="form-label">Company Name *</label>
+                            <input type="text" class="form-control" id="edit_name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_contact_person" class="form-label">Contact Person</label>
+                            <input type="text" class="form-control" id="edit_contact_person" name="contact_person">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="edit_email" name="email">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="edit_phone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="edit_phone" name="phone">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_address" class="form-label">Address</label>
+                        <textarea class="form-control" id="edit_address" name="address" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Update Supplier
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function editSupplier(id, name, contact_person, email, phone, address) {
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_contact_person').value = contact_person || '';
+    document.getElementById('edit_email').value = email || '';
+    document.getElementById('edit_phone').value = phone || '';
+    document.getElementById('edit_address').value = address || '';
+    
+    document.getElementById('editSupplierForm').action = '/suppliers/update/' + id;
+    
+    new bootstrap.Modal(document.getElementById('editSupplierModal')).show();
+}
+</script>
+{% endblock %}

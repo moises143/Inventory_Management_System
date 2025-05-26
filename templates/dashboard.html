@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h1>
+            <p class="text-muted">Welcome back, {{ session.username }}!</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-cubes fa-2x mb-2"></i>
+                    <h3>{{ total_items }}</h3>
+                    <p class="mb-0">Total Items</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                    <h3>{{ low_stock_items }}</h3>
+                    <p class="mb-0">Low Stock Alerts</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-truck fa-2x mb-2"></i>
+                    <h3>{{ total_suppliers }}</h3>
+                    <p class="mb-0">Suppliers</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-dollar-sign fa-2x mb-2"></i>
+                    <h3>${{ "%.2f"|format(total_value) }}</h3>
+                    <p class="mb-0">Total Value</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-plus me-1"></i>Add Item
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('suppliers') }}" class="btn btn-outline-info w-100">
+                                <i class="fas fa-truck me-1"></i>Manage Suppliers
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('reports') }}" class="btn btn-outline-success w-100">
+                                <i class="fas fa-chart-bar me-1"></i>View Reports
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-2">
+                            <a href="{{ url_for('inventory') }}?search=" class="btn btn-outline-secondary w-100">
+                                <i class="fas fa-search me-1"></i>Search Items
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alerts -->
+    {% if low_stock_alerts %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h5><i class="fas fa-exclamation-triangle me-2"></i>Low Stock Alerts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Current Stock</th>
+                                    <th>Reorder Point</th>
+                                    <th>Supplier</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in low_stock_alerts %}
+                                <tr>
+                                    <td>{{ item.name }}</td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ item.quantity }}</span>
+                                    </td>
+                                    <td>{{ item.reorder_point }}</td>
+                                    <td>{{ item.supplier.name if item.supplier else 'N/A' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('inventory') }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i> Update
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <h5>All items are well-stocked!</h5>
+                    <p class="text-muted">No low stock alerts at this time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
