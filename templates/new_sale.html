@@ -1,0 +1,856 @@
+{% extends "base.html" %}
+
+{% block title %}New Sale - Inventory Management System{% endblock %}
+
+{% block styles %}
+<style>
+    /* Enhanced visibility and contrast */
+    .card {
+        border: 1px solid #d0d7de;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    }
+
+    .card-body {
+        background-color: #f8f9fa !important;
+        border-radius: 0 0 0.375rem 0.375rem;
+    }
+
+    .card-header {
+        background-color: #e9ecef !important;
+        border-bottom: 1px solid #d0d7de;
+        font-weight: 600;
+    }
+
+    /* Search section styling */
+    .search-section {
+        background: linear-gradient(135deg, #e3f2fd 0%, #f1f8e9 100%) !important;
+        border: 1px solid #b3d4fc;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    /* Form controls with better contrast */
+    .form-control, .form-select {
+        background-color: #ffffff;
+        border: 1px solid #6c757d;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.075);
+    }
+
+    .form-control:focus, .form-select:focus {
+        background-color: #ffffff;
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    /* Product select styling */
+    #productSelect {
+        background-color: #ffffff;
+        border: 2px solid #495057;
+        font-family: 'Courier New', monospace;
+        font-size: 0.85em;
+    }
+
+    #productSelect option {
+        padding: 4px 8px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    #productSelect option:hover,
+    #productSelect option:focus {
+        background-color: #e3f2fd !important;
+    }
+
+    #productSelect option.text-danger {
+        background-color: #ffebee;
+        color: #c62828 !important;
+    }
+
+    #productSelect option.text-warning {
+        background-color: #fff8e1;
+        color: #f57c00 !important;
+    }
+
+    /* Product details panel */
+    #productDetails {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 8px;
+    }
+
+    /* Cart table styling */
+    .table {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+    }
+
+    .table thead th {
+        background-color: #495057 !important;
+        color: #ffffff;
+        border-color: #495057;
+    }
+
+    .table tbody tr {
+        background-color: #ffffff;
+    }
+
+    .table tbody tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+
+    .table tbody tr:hover {
+        background-color: #e3f2fd;
+    }
+
+    /* Button styling improvements */
+    .btn-primary {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        font-weight: 500;
+    }
+
+    .btn-success {
+        background-color: #198754;
+        border-color: #198754;
+        font-weight: 600;
+    }
+
+    .btn-outline-secondary {
+        color: #495057;
+        border-color: #6c757d;
+        background-color: #ffffff;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #495057;
+        border-color: #495057;
+    }
+
+    .btn-outline-danger {
+        color: #dc3545;
+        background-color: #ffffff;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: #ffffff;
+    }
+
+    /* Recent items styling */
+    #recentItemsSection {
+        background-color: #f0f8ff;
+        border: 1px solid #b3d4fc;
+        border-radius: 6px;
+        padding: 10px;
+    }
+
+    #recentItems .btn {
+        background-color: #ffffff;
+        border: 1px solid #6c757d;
+        color: #495057;
+        margin: 2px;
+    }
+
+    #recentItems .btn:hover {
+        background-color: #e3f2fd;
+        border-color: #0d6efd;
+        color: #0d6efd;
+    }
+
+    /* Badge styling */
+    .badge {
+        font-weight: 600;
+        font-size: 0.8em;
+    }
+
+    .badge.bg-primary {
+        background-color: #0d6efd !important;
+    }
+
+    /* Empty cart styling */
+    #emptyCart {
+        background-color: #f8f9fa;
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        color: #6c757d;
+    }
+
+    /* Quick add SKU input */
+    #quickAddSku {
+        border: 2px solid #0d6efd;
+        background-color: #ffffff;
+    }
+
+    #quickAddSku:focus {
+        border-color: #0a58ca;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+    }
+
+    /* Toast notifications */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    /* Keyboard shortcuts info */
+    .keyboard-shortcuts {
+        background-color: #ffffff;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-size: 0.8em;
+        color: #495057;
+    }
+
+    /* Labels with better contrast */
+    .form-label {
+        color: #212529;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-label small {
+        color: #6c757d;
+        font-weight: normal;
+    }
+
+    /* Text improvements */
+    .text-muted {
+        color: #6c757d !important;
+    }
+
+    /* Summary section */
+    .sale-summary {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 15px;
+    }
+
+    /* Product count badge */
+    #productCount {
+        background-color: #0d6efd !important;
+        color: #ffffff;
+        font-weight: 600;
+    }
+
+    /* Input group styling */
+    .input-group .form-control {
+        background-color: #ffffff;
+    }
+
+    .input-group-text {
+        background-color: #e9ecef;
+        border-color: #6c757d;
+        color: #495057;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-plus-circle me-2"></i>New Sale</h1>
+            <p class="text-muted">Create a new sale transaction</p>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('create_sale') }}" id="saleForm">
+        <div class="row">
+            <!-- Customer Information -->
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5><i class="fas fa-user me-2"></i>Customer Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="customer_name" class="form-label">Customer Name</label>
+                            <input type="text" class="form-control" id="customer_name" name="customer_name" placeholder="Optional">
+                        </div>
+                        <div class="mb-3">
+                            <label for="payment_method" class="form-label">Payment Method</label>
+                            <select class="form-select" id="payment_method" name="payment_method" required>
+                                <option value="cash">Cash</option>
+                                <option value="gcash">GCash</option>
+                                <option value="paymaya">PayMaya</option>
+                                <option value="card">Credit/Debit Card</option>
+                                <option value="bank_transfer">Bank Transfer</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Optional notes"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sale Summary -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-calculator me-2"></i>Sale Summary</h5>
+                    </div>
+                    <div class="card-body sale-summary">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><strong>Items:</strong></span>
+                            <span id="totalItems" class="badge bg-secondary">0</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total:</strong>
+                            <strong id="totalAmount" class="text-success fs-5">₱0.00</strong>
+                        </div>
+
+                        <!-- Quick Add by SKU -->
+                        <div class="mb-3">
+                            <label for="quickAddSku" class="form-label">
+                                <i class="fas fa-barcode me-1"></i>Quick Add by SKU
+                                <small class="text-muted">(Press F1)</small>
+                            </label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="quickAddSku"
+                                       placeholder="Scan/enter SKU..." autocomplete="off">
+                                <button type="button" class="btn btn-outline-primary" onclick="quickAddBySku()">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-success w-100 mb-2" id="completeSaleBtn" disabled>
+                            <i class="fas fa-check me-1"></i>Complete Sale (F4)
+                        </button>
+                        <a href="{{ url_for('sales_dashboard') }}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-arrow-left me-1"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Selection -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-shopping-cart me-2"></i>Products</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Advanced Search Section -->
+                        <div class="search-section">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label for="productSearch" class="form-label">
+                                        <i class="fas fa-search me-1"></i>Search Products
+                                        <small class="text-muted">(F2)</small>
+                                    </label>
+                                    <input type="text" class="form-control" id="productSearch"
+                                           placeholder="Name, SKU, description..." autocomplete="off">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="categoryFilter" class="form-label">Category</label>
+                                    <select class="form-select" id="categoryFilter">
+                                        <option value="">All Categories</option>
+                                        {% for category in categories %}
+                                            <option value="{{ category }}">{{ category }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="stockFilter" class="form-label">Stock Status</label>
+                                    <select class="form-select" id="stockFilter">
+                                        <option value="">All Items</option>
+                                        <option value="in-stock">In Stock</option>
+                                        <option value="low-stock">Low Stock</option>
+                                        <option value="out-of-stock">Out of Stock</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 d-flex align-items-end">
+                                    <button type="button" class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                                        <i class="fas fa-refresh"></i> Clear
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-12">
+                                    <div class="keyboard-shortcuts">
+                                        <strong>Keyboard shortcuts:</strong> F1: Quick SKU | F2: Search | F3: Add First Item | F4: Complete Sale
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add Product Section -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="productSelect" class="form-label">Select Product
+                                    <span class="badge bg-primary" id="productCount">{{ products|length }}</span>
+                                </label>
+                                <select class="form-select" id="productSelect" size="8">
+                                    {% for product in products %}
+                                    <option value="{{ product.id }}"
+                                            data-name="{{ product.name }}"
+                                            data-price="{{ product.selling_price }}"
+                                            data-stock="{{ product.quantity }}"
+                                            data-sku="{{ product.sku }}"
+                                            data-category="{{ product.category or '' }}"
+                                            data-description="{{ product.description or '' }}"
+                                            data-reorder="{{ product.reorder_point }}"
+                                            class="product-option {{ 'text-danger' if product.quantity == 0 else 'text-warning' if product.quantity <= product.reorder_point else '' }}">
+                                        {{ product.sku }} | {{ product.name[:25] }}{% if product.name|length > 25 %}...{% endif %} | ₱{{ "%.2f"|format(product.selling_price) }} | Stock: {{ product.quantity }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <small class="text-muted">Double-click to add item to cart</small>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="quantityInput" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" id="quantityInput" min="1" value="1">
+
+                                <!-- Product Details -->
+                                <div id="productDetails" class="mt-2" style="display: none;">
+                                    <small>
+                                        <div><strong>SKU:</strong> <span id="detailSku"></span></div>
+                                        <div><strong>Price:</strong> ₱<span id="detailPrice"></span></div>
+                                        <div><strong>Stock:</strong> <span id="detailStock"></span></div>
+                                        <div><strong>Category:</strong> <span id="detailCategory"></span></div>
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="w-100">
+                                    <button type="button" class="btn btn-primary w-100 mb-2" onclick="addToCart()">
+                                        <i class="fas fa-plus me-1"></i>Add to Cart (F3)
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm w-100" onclick="addMultiple()">
+                                        <i class="fas fa-layer-group me-1"></i>Add Multiple
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recently Added Items -->
+                        <div id="recentItemsSection" class="mb-3" style="display: none;">
+                            <label class="form-label">
+                                <i class="fas fa-history me-1"></i>Recently Added
+                            </label>
+                            <div id="recentItems" class="d-flex gap-2 flex-wrap"></div>
+                        </div>
+
+                        <!-- Cart Items -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-sm" id="cartTable">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th width="100">Quantity</th>
+                                        <th width="100">Unit Price</th>
+                                        <th width="100">Total</th>
+                                        <th width="80">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cartItems">
+                                    <!-- Cart items will be added here dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div id="emptyCart" class="text-center py-4">
+                            <i class="fas fa-shopping-cart fa-3x text-muted mb-3"></i>
+                            <h5>Cart is empty</h5>
+                            <p class="text-muted">Add products to start a sale</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Audio for feedback -->
+<audio id="beepSound" preload="auto">
+    <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+L2s2cUHD4ADx=" type="audio/wav">
+</audio>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let cart = [];
+let recentItems = [];
+let allProducts = [];
+
+// Initialize products array from server data
+{% for product in products %}
+allProducts.push({
+    id: {{ product.id }},
+    name: {{ product.name|tojson }},
+    price: {{ product.selling_price }},
+    stock: {{ product.quantity }},
+    sku: {{ product.sku|tojson }},
+    category: {{ (product.category or '')|tojson }},
+    description: {{ (product.description or '')|tojson }},
+    reorder_point: {{ product.reorder_point }}
+});
+{% endfor %}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.target.tagName.toLowerCase() === 'input' || e.target.tagName.toLowerCase() === 'textarea' || e.target.tagName.toLowerCase() === 'select') {
+        return;
+    }
+
+    switch(e.key) {
+        case 'F1':
+            e.preventDefault();
+            document.getElementById('quickAddSku').focus();
+            break;
+        case 'F2':
+            e.preventDefault();
+            document.getElementById('productSearch').focus();
+            break;
+        case 'F3':
+            e.preventDefault();
+            addToCart();
+            break;
+        case 'F4':
+            e.preventDefault();
+            if (!document.getElementById('completeSaleBtn').disabled) {
+                document.getElementById('saleForm').submit();
+            }
+            break;
+    }
+});
+
+// Search and filter functionality
+document.getElementById('productSearch').addEventListener('input', filterProducts);
+document.getElementById('categoryFilter').addEventListener('change', filterProducts);
+document.getElementById('stockFilter').addEventListener('change', filterProducts);
+
+// Quick add by SKU
+document.getElementById('quickAddSku').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        quickAddBySku();
+    }
+});
+
+// Product selection change
+document.getElementById('productSelect').addEventListener('change', function() {
+    showProductDetails();
+});
+
+// Double-click to add
+document.getElementById('productSelect').addEventListener('dblclick', function() {
+    addToCart();
+});
+
+function filterProducts() {
+    const searchTerm = document.getElementById('productSearch').value.toLowerCase();
+    const categoryFilter = document.getElementById('categoryFilter').value;
+    const stockFilter = document.getElementById('stockFilter').value;
+    const productSelect = document.getElementById('productSelect');
+
+    let visibleCount = 0;
+
+    Array.from(productSelect.options).forEach(option => {
+        if (option.value === '') return;
+
+        const product = allProducts.find(p => p.id == option.value);
+        if (!product) return;
+
+        let show = true;
+
+        // Search filter
+        if (searchTerm) {
+            const searchableText = `${product.name} ${product.sku} ${product.description}`.toLowerCase();
+            show = show && searchableText.includes(searchTerm);
+        }
+
+        // Category filter
+        if (categoryFilter) {
+            show = show && product.category === categoryFilter;
+        }
+
+        // Stock filter
+        if (stockFilter) {
+            switch(stockFilter) {
+                case 'in-stock':
+                    show = show && product.stock > product.reorder_point;
+                    break;
+                case 'low-stock':
+                    show = show && product.stock <= product.reorder_point && product.stock > 0;
+                    break;
+                case 'out-of-stock':
+                    show = show && product.stock === 0;
+                    break;
+            }
+        }
+
+        option.style.display = show ? 'block' : 'none';
+        if (show) visibleCount++;
+    });
+
+    document.getElementById('productCount').textContent = visibleCount;
+}
+
+function clearFilters() {
+    document.getElementById('productSearch').value = '';
+    document.getElementById('categoryFilter').value = '';
+    document.getElementById('stockFilter').value = '';
+    filterProducts();
+}
+
+function showProductDetails() {
+    const productSelect = document.getElementById('productSelect');
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
+
+    if (!selectedOption || !selectedOption.value) {
+        document.getElementById('productDetails').style.display = 'none';
+        return;
+    }
+
+    document.getElementById('detailSku').textContent = selectedOption.dataset.sku;
+    document.getElementById('detailPrice').textContent = parseFloat(selectedOption.dataset.price).toFixed(2);
+    document.getElementById('detailStock').textContent = selectedOption.dataset.stock;
+    document.getElementById('detailCategory').textContent = selectedOption.dataset.category || 'N/A';
+    document.getElementById('productDetails').style.display = 'block';
+}
+
+function quickAddBySku() {
+    const sku = document.getElementById('quickAddSku').value.trim().toLowerCase();
+    if (!sku) return;
+
+    const product = allProducts.find(p => p.sku.toLowerCase() === sku);
+    if (!product) {
+        showToast('Product not found with SKU: ' + sku, 'error');
+        return;
+    }
+
+    if (product.stock <= 0) {
+        showToast('Product is out of stock!', 'error');
+        return;
+    }
+
+    // Select the product and add to cart
+    document.getElementById('productSelect').value = product.id;
+    showProductDetails();
+    addToCart();
+
+    // Clear the SKU input
+    document.getElementById('quickAddSku').value = '';
+    playBeep();
+}
+
+function addToCart() {
+    const productSelect = document.getElementById('productSelect');
+    const quantityInput = document.getElementById('quantityInput');
+
+    if (!productSelect.value) {
+        showToast('Please select a product', 'warning');
+        return;
+    }
+
+    const quantity = parseInt(quantityInput.value);
+    if (quantity <= 0) {
+        showToast('Please enter a valid quantity', 'warning');
+        return;
+    }
+
+    const selectedOption = productSelect.options[productSelect.selectedIndex];
+    const productId = selectedOption.value;
+    const productName = selectedOption.dataset.name;
+    const unitPrice = parseFloat(selectedOption.dataset.price);
+    const stock = parseInt(selectedOption.dataset.stock);
+    const sku = selectedOption.dataset.sku;
+
+    if (quantity > stock) {
+        showToast(`Insufficient stock. Available: ${stock}`, 'error');
+        return;
+    }
+
+    // Check if product already in cart
+    const existingItem = cart.find(item => item.productId === productId);
+    if (existingItem) {
+        if (existingItem.quantity + quantity > stock) {
+            showToast(`Total quantity would exceed stock. Available: ${stock}, Already in cart: ${existingItem.quantity}`, 'error');
+            return;
+        }
+        existingItem.quantity += quantity;
+        existingItem.total = existingItem.quantity * unitPrice;
+    } else {
+        cart.push({
+            productId: productId,
+            productName: productName,
+            quantity: quantity,
+            unitPrice: unitPrice,
+            total: quantity * unitPrice,
+            sku: sku
+        });
+    }
+
+    // Add to recent items
+    addToRecentItems({name: productName, sku: sku, id: productId});
+
+    updateCartDisplay();
+    updateSummary();
+    playBeep();
+
+    // Reset quantity
+    quantityInput.value = 1;
+
+    showToast('Product added to cart!', 'success');
+}
+
+function addMultiple() {
+    const quantity = prompt('Enter quantity to add:');
+    if (quantity && parseInt(quantity) > 0) {
+        document.getElementById('quantityInput').value = quantity;
+        addToCart();
+    }
+}
+
+function addToRecentItems(product) {
+    recentItems = recentItems.filter(item => item.id !== product.id);
+    recentItems.unshift(product);
+    recentItems = recentItems.slice(0, 5);
+
+    updateRecentItemsDisplay();
+}
+
+function updateRecentItemsDisplay() {
+    const recentSection = document.getElementById('recentItemsSection');
+    const recentContainer = document.getElementById('recentItems');
+
+    if (recentItems.length === 0) {
+        recentSection.style.display = 'none';
+        return;
+    }
+
+    recentSection.style.display = 'block';
+    recentContainer.innerHTML = recentItems.map(item => `
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectProduct('${item.id}')">
+            ${item.sku} - ${item.name.length > 15 ? item.name.substring(0, 15) + '...' : item.name}
+        </button>
+    `).join('');
+}
+
+function selectProduct(productId) {
+    document.getElementById('productSelect').value = productId;
+    showProductDetails();
+    document.getElementById('quantityInput').focus();
+}
+
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    updateCartDisplay();
+    updateSummary();
+}
+
+function updateQuantity(index, newQuantity) {
+    if (newQuantity <= 0) {
+        removeFromCart(index);
+        return;
+    }
+
+    const item = cart[index];
+    const product = allProducts.find(p => p.id == item.productId);
+
+    if (newQuantity > product.stock) {
+        showToast(`Insufficient stock. Available: ${product.stock}`, 'error');
+        return;
+    }
+
+    item.quantity = newQuantity;
+    item.total = item.quantity * item.unitPrice;
+    updateCartDisplay();
+    updateSummary();
+}
+
+function updateCartDisplay() {
+    const cartItems = document.getElementById('cartItems');
+    const emptyCart = document.getElementById('emptyCart');
+
+    if (cart.length === 0) {
+        cartItems.innerHTML = '';
+        emptyCart.style.display = 'block';
+        return;
+    }
+
+    emptyCart.style.display = 'none';
+
+    cartItems.innerHTML = cart.map((item, index) => `
+        <tr>
+            <td>
+                <strong>${item.productName}</strong><br>
+                <small class="text-muted">SKU: ${item.sku}</small>
+                <input type="hidden" name="item_id[]" value="${item.productId}">
+                <input type="hidden" name="quantity[]" value="${item.quantity}">
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm"
+                       value="${item.quantity}" min="1"
+                       onchange="updateQuantity(${index}, this.value)"
+                       style="width: 80px;">
+            </td>
+            <td>₱${item.unitPrice.toFixed(2)}</td>
+            <td><strong>₱${item.total.toFixed(2)}</strong></td>
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-danger"
+                        onclick="removeFromCart(${index})" title="Remove item">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function updateSummary() {
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
+
+    document.getElementById('totalItems').textContent = totalItems;
+    document.getElementById('totalAmount').textContent = `₱${totalAmount.toFixed(2)}`;
+
+    const completeSaleBtn = document.getElementById('completeSaleBtn');
+    completeSaleBtn.disabled = cart.length === 0;
+}
+
+function playBeep() {
+    try {
+        const audio = document.getElementById('beepSound');
+        audio.currentTime = 0;
+        audio.play().catch(() => {}); // Ignore errors if audio can't play
+    } catch (e) {}
+}
+
+function showToast(message, type = 'info') {
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'error' ? 'danger' : type === 'warning' ? 'warning' : type === 'success' ? 'success' : 'info'} alert-dismissible fade show position-fixed`;
+    toast.style.top = '20px';
+    toast.style.right = '20px';
+    toast.style.zIndex = '9999';
+    toast.style.minWidth = '300px';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+
+    document.body.appendChild(toast);
+
+    // Auto remove after 3 seconds
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 3000);
+}
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    updateCartDisplay();
+    updateSummary();
+    showProductDetails();
+});
+</script>
+{% endblock %}

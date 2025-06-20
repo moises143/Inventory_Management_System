@@ -25,7 +25,7 @@
                             <p class="mb-0">Total Items</p>
                         </div>
                         <div class="col-6">
-                            <h4 class="text-success">${{ "%.2f"|format(total_value) }}</h4>
+                            <h4 class="text-success">₱{{ "%.2f"|format(total_value) }}</h4>
                             <p class="mb-0">Total Value</p>
                         </div>
                     </div>
@@ -78,11 +78,11 @@
                                 <tr>
                                     <td>{{ category or 'Uncategorized' }}</td>
                                     <td>{{ count }}</td>
-                                    <td>${{ "%.2f"|format(value or 0) }}</td>
+                                    <td>₱{{ "%.2f"|format(value or 0) }}</td>
                                     <td>
                                         {% set percentage = ((value or 0) / total_value * 100) if total_value > 0 else 0 %}
                                         <div class="progress" style="height: 20px;">
-                                            <div class="progress-bar" role="progressbar" 
+                                            <div class="progress-bar" role="progressbar"
                                                  style="width: {{ percentage }}%;">
                                                 {{ "%.1f"|format(percentage) }}%
                                             </div>
@@ -130,9 +130,9 @@
                                     </td>
                                     <td>{{ item.reorder_point }}</td>
                                     <td>{{ item.supplier.name if item.supplier else 'N/A' }}</td>
-                                    <td>${{ "%.2f"|format(item.unit_price) }}</td>
+                                    <td>₱{{ "%.2f"|format(item.unit_price) }}</td>
                                     <td>{{ item.reorder_point - item.quantity }}</td>
-                                    <td>${{ "%.2f"|format((item.reorder_point - item.quantity) * item.unit_price) }}</td>
+                                    <td>₱{{ "%.2f"|format((item.reorder_point - item.quantity) * item.unit_price) }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

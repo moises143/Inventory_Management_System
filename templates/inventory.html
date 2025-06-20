@@ -91,8 +91,8 @@
                                             {{ item.quantity }}
                                         </span>
                                     </td>
-                                    <td>${{ "%.2f"|format(item.unit_price) }}</td>
-                                    <td>${{ "%.2f"|format(item.total_value) }}</td>
+                                    <td>₱{{ "%.2f"|format(item.unit_price) }}</td>
+                                    <td>₱{{ "%.2f"|format(item.total_value) }}</td>
                                     <td>{{ item.reorder_point }}</td>
                                     <td>{{ item.supplier.name if item.supplier else 'N/A' }}</td>
                                     <td>
@@ -118,7 +118,9 @@
                                             </button>
                                         </form>
                                     </td>
+
                                 </tr>
+
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -268,6 +270,7 @@
         </div>
     </div>
 </div>
+
 {% endblock %}
 
 {% block scripts %}

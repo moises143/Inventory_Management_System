@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Sales Dashboard - Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-cash-register me-2"></i>Sales Dashboard</h1>
+            <p class="text-muted">Welcome back, {{ user.username }}! Start selling products below.</p>
+        </div>
+    </div>
+
+    <!-- Sales Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success">
+                <div class="card-body text-center">
+                    <i class="fas fa-peso-sign fa-2x mb-2"></i>
+                    <h3>₱{{ "%.2f"|format(today_revenue) }}</h3>
+                    <p class="mb-0">Today's Revenue</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info">
+                <div class="card-body text-center">
+                    <i class="fas fa-shopping-cart fa-2x mb-2"></i>
+                    <h3>{{ today_sales_count }}</h3>
+                    <p class="mb-0">Today's Sales</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-2x mb-2"></i>
+                    <h3>₱{{ "%.2f"|format(week_revenue) }}</h3>
+                    <p class="mb-0">This Week</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning">
+                <div class="card-body text-center">
+                    <i class="fas fa-box fa-2x mb-2"></i>
+                    <h3>{{ available_products|length }}</h3>
+                    <p class="mb-0">Available Products</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ url_for('new_sale') }}" class="btn btn-success btn-lg w-100">
+                                <i class="fas fa-plus me-1"></i>New Sale
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ url_for('sales_history') }}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fas fa-history me-1"></i>Sales History
+                            </a>
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <a href="{{ url_for('inventory') }}" class="btn btn-outline-info btn-lg w-100">
+                                <i class="fas fa-search me-1"></i>Check Stock
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Sales -->
+    {% if recent_sales %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-clock me-2"></i>Recent Sales</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Sale #</th>
+                                    <th>Customer</th>
+                                    <th>Amount</th>
+                                    <th>Payment</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in recent_sales %}
+                                <tr>
+                                    <td><strong>{{ sale.sale_number }}</strong></td>
+                                    <td>{{ sale.customer_name or 'Walk-in Customer' }}</td>
+                                    <td><strong>₱{{ "%.2f"|format(sale.total_amount) }}</strong></td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if sale.payment_method == 'cash' else 'info' }}">
+                                            {{ sale.payment_method.title() }}
+                                        </span>
+                                    </td>
+                                    <td>{{ sale.sale_date.strftime('%m/%d/%Y %I:%M %p') }}</td>
+                                    <td>
+                                        <a href="{{ url_for('sale_receipt', sale_id=sale.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-receipt"></i> Receipt
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                    <h5>No sales yet</h5>
+                    <p class="text-muted">Start by creating your first sale!</p>
+                    <a href="{{ url_for('new_sale') }}" class="btn btn-success">
+                        <i class="fas fa-plus me-1"></i>Create First Sale
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

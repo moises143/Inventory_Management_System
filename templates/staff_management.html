@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Management - Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1><i class="fas fa-users me-2"></i>Staff Management</h1>
+            <p class="text-muted">Manage staff accounts and permissions</p>
+        </div>
+    </div>
+
+    <!-- Add Staff Button -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+                <i class="fas fa-plus me-1"></i>Add New Staff Member
+            </button>
+        </div>
+    </div>
+
+    <!-- Staff Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if staff_members %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Created Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for staff in staff_members %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ staff.username }}</strong>
+                                        <span class="badge bg-info ms-2">Staff</span>
+                                    </td>
+                                    <td>{{ staff.email }}</td>
+                                    <td>
+                                        {% if staff.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ staff.created_at.strftime('%Y-%m-%d') }}</td>
+                                    <td>
+                                        <form method="POST" action="{{ url_for('toggle_staff_status', staff_id=staff.id) }}" style="display: inline;">
+                                            <button type="submit" class="btn btn-sm btn-outline-{{ 'warning' if staff.is_active else 'success' }}">
+                                                <i class="fas fa-{{ 'pause' if staff.is_active else 'play' }}"></i>
+                                                {{ 'Deactivate' if staff.is_active else 'Activate' }}
+                                            </button>
+                                        </form>
+                                        
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="showResetPassword('{{ staff.id }}', '{{ staff.username }}')">
+                                            <i class="fas fa-key"></i> Reset Password
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                        <h5>No staff members found</h5>
+                        <p class="text-muted">Start by adding your first staff member.</p>
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal">
+                            <i class="fas fa-plus me-1"></i>Add Staff Member
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Staff Modal -->
+<div class="modal fade" id="addStaffModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-plus me-2"></i>Add New Staff Member</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('add_staff') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username *</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password *</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">Minimum 6 characters recommended</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i>Add Staff Member
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Reset Password Modal -->
+<div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-key me-2"></i>Reset Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="resetPasswordForm">
+                <div class="modal-body">
+                    <p>Reset password for: <strong id="resetUsername"></strong></p>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">New Password *</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                        <div class="form-text">Minimum 6 characters recommended</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i>Reset Password
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showResetPassword(staffId, username) {
+    document.getElementById('resetUsername').textContent = username;
+    document.getElementById('resetPasswordForm').action = '/admin/staff/' + staffId + '/reset-password';
+    document.getElementById('new_password').value = '';
+    
+    new bootstrap.Modal(document.getElementById('resetPasswordModal')).show();
+}
+</script>
+{% endblock %}

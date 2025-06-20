@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin DB View</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f0f0f0; }
+        .danger-zone { border: 2px solid #dc3545; border-radius: 5px; padding: 15px; margin: 20px 0; background-color: #fff5f5; }
+        .btn-group { margin: 10px 0; }
+        .action-buttons { white-space: nowrap; }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1><i class="fas fa-database me-2"></i>Database Viewer (Admin Only)</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Database Management Actions -->
+        <div class="danger-zone">
+            <h3><i class="fas fa-exclamation-triangle me-2"></i>Database Management</h3>
+            <p class="text-muted">Use these tools to manage your database contents. <strong>Use with caution!</strong></p>
+
+            <div class="btn-group" role="group">
+                <button class="btn btn-info" onclick="showPopulateSampleModal()">
+                    <i class="fas fa-plus-circle me-1"></i>Populate Sample Data
+                </button>
+                <button class="btn btn-warning" onclick="showClearAllModal()">
+                    <i class="fas fa-trash-alt me-1"></i>Clear All Data
+                </button>
+                <a href="{{ url_for('admin_db_view') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-refresh me-1"></i>Refresh View
+                </a>
+            </div>
+        </div>
+
+        <h2>Users <span class="badge bg-primary">{{ users|length }}</span>
+            {% if users|length > 1 %}
+            <button class="btn btn-sm btn-outline-danger ms-2" onclick="showClearTableModal('user')">
+                <i class="fas fa-trash me-1"></i>Clear Staff Users
+            </button>
+            {% endif %}
+        </h2>
+        <table class="table table-striped">
+            <tr><th>ID</th><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+            {% for u in users %}
+            <tr>
+                <td>{{ u.id }}</td>
+                <td>{{ u.username }}</td>
+                <td>{{ u.email }}</td>
+                <td><span class="badge bg-{{ 'danger' if u.role.value == 'admin' else 'info' }}">{{ u.role.value.title() }}</span></td>
+                <td><span class="badge bg-{{ 'success' if u.is_active else 'secondary' }}">{{ 'Active' if u.is_active else 'Inactive' }}</span></td>
+                <td>{{ u.created_at.strftime('%Y-%m-%d %H:%M') if u.created_at else 'N/A' }}</td>
+                <td class="action-buttons">
+                    {% if u.role.value != 'admin' %}
+                    <button class="btn btn-sm btn-outline-danger" onclick="showDeleteRecordModal('user', {{ u.id }}, '{{ u.username }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    {% else %}
+                    <span class="text-muted">Protected</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h2>Inventory Items <span class="badge bg-primary">{{ items|length }}</span>
+            {% if items|length > 0 %}
+            <button class="btn btn-sm btn-outline-danger ms-2" onclick="showClearTableModal('inventory_item')">
+                <i class="fas fa-trash me-1"></i>Clear All Items
+            </button>
+            {% endif %}
+        </h2>
+        <table class="table table-striped">
+            <tr><th>ID</th><th>Name</th><th>SKU</th><th>Qty</th><th>Unit Price</th><th>Selling Price</th><th>Total Value</th><th>Status</th><th>Actions</th></tr>
+            {% for i in items %}
+            <tr>
+                <td>{{ i.id }}</td>
+                <td>{{ i.name }}</td>
+                <td>{{ i.sku }}</td>
+                <td>{{ i.quantity }}</td>
+                <td>₱{{ "%.2f"|format(i.unit_price) }}</td>
+                <td>₱{{ "%.2f"|format(i.selling_price) }}</td>
+                <td>₱{{ "%.2f"|format(i.total_value) }}</td>
+                <td><span class="badge bg-{{ 'success' if i.is_active else 'secondary' }}">{{ 'Active' if i.is_active else 'Inactive' }}</span></td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-outline-danger" onclick="showDeleteRecordModal('inventory_item', {{ i.id }}, '{{ i.name }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h2>Suppliers <span class="badge bg-primary">{{ suppliers|length }}</span>
+            {% if suppliers|length > 0 %}
+            <button class="btn btn-sm btn-outline-danger ms-2" onclick="showClearTableModal('supplier')">
+                <i class="fas fa-trash me-1"></i>Clear All Suppliers
+            </button>
+            {% endif %}
+        </h2>
+        <table class="table table-striped">
+            <tr><th>ID</th><th>Name</th><th>Contact</th><th>Email</th><th>Phone</th><th>Address</th><th>Actions</th></tr>
+            {% for s in suppliers %}
+            <tr>
+                <td>{{ s.id }}</td>
+                <td>{{ s.name }}</td>
+                <td>{{ s.contact_person or 'N/A' }}</td>
+                <td>{{ s.email or 'N/A' }}</td>
+                <td>{{ s.phone or 'N/A' }}</td>
+                <td>{{ s.address or 'N/A' }}</td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-outline-danger" onclick="showDeleteRecordModal('supplier', {{ s.id }}, '{{ s.name }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <h2>Sales <span class="badge bg-primary">{{ sales|length }}</span>
+            {% if sales|length > 0 %}
+            <button class="btn btn-sm btn-outline-danger ms-2" onclick="showClearTableModal('sale')">
+                <i class="fas fa-trash me-1"></i>Clear All Sales
+            </button>
+            {% endif %}
+        </h2>
+        {% if sales %}
+        <table class="table table-striped">
+            <tr><th>ID</th><th>Sale Number</th><th>Staff</th><th>Customer</th><th>Amount</th><th>Payment</th><th>Date</th><th>Actions</th></tr>
+            {% for sale in sales %}
+            <tr>
+                <td>{{ sale.id }}</td>
+                <td>{{ sale.sale_number }}</td>
+                <td>{{ sale.staff.username if sale.staff else 'Deleted Staff' }}</td>
+                <td>{{ sale.customer_name or 'Walk-in' }}</td>
+                <td>₱{{ "%.2f"|format(sale.total_amount) }}</td>
+                <td><span class="badge bg-info">{{ sale.payment_method.title() }}</span></td>
+                <td>{{ sale.sale_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-outline-danger" onclick="showDeleteRecordModal('sale', {{ sale.id }}, '{{ sale.sale_number }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="text-muted">No sales records found.</p>
+        {% endif %}
+
+        <h2>Stock Transactions <span class="badge bg-primary">{{ transactions|length }}</span>
+            {% if transactions|length > 0 %}
+            <button class="btn btn-sm btn-outline-danger ms-2" onclick="showClearTableModal('stock_transaction')">
+                <i class="fas fa-trash me-1"></i>Clear All Transactions
+            </button>
+            {% endif %}
+        </h2>
+        {% if transactions %}
+        <table class="table table-striped">
+            <tr><th>ID</th><th>Item</th><th>Type</th><th>Quantity</th><th>User</th><th>Date</th><th>Notes</th><th>Actions</th></tr>
+            {% for trans in transactions %}
+            <tr>
+                <td>{{ trans.id }}</td>
+                <td>{{ trans.item.name if trans.item else 'Deleted Item' }}</td>
+                <td><span class="badge bg-{{ 'success' if trans.transaction_type == 'add' else 'danger' if trans.transaction_type == 'sale' else 'warning' }}">{{ trans.transaction_type.title() }}</span></td>
+                <td>{{ trans.quantity }}</td>
+                <td>{{ trans.user.username if trans.user else 'N/A' }}</td>
+                <td>{{ trans.timestamp.strftime('%Y-%m-%d %H:%M') }}</td>
+                <td>{{ trans.notes or 'N/A' }}</td>
+                <td class="action-buttons">
+                    <button class="btn btn-sm btn-outline-danger" onclick="showDeleteRecordModal('stock_transaction', {{ trans.id }}, 'Transaction #{{ trans.id }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% else %}
+        <p class="text-muted">No stock transactions found.</p>
+        {% endif %}
+    </div>
+
+    <!-- Existing Modals -->
+    <!-- Clear All Data Modal -->
+    <div class="modal fade" id="clearAllModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Clear All Database Data
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('clear_all_data') }}">
+                    <div class="modal-body">
+                        <div class="alert alert-danger">
+                            <strong>WARNING:</strong> This will permanently delete ALL data including sales, inventory, suppliers, and staff users (admin preserved).
+                        </div>
+                        <p><strong>This action cannot be undone!</strong></p>
+                        <div class="mb-3">
+                            <label for="confirm_clear" class="form-label">Type <code>DELETE_ALL_DATA</code> to confirm:</label>
+                            <input type="text" class="form-control" id="confirm_clear" name="confirm_clear" placeholder="DELETE_ALL_DATA" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Delete All Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clear Table Modal -->
+    <div class="modal fade" id="clearTableModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">
+                        <i class="fas fa-trash me-2"></i>Clear Table Data
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" id="clearTableForm">
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <strong>WARNING:</strong> This will delete all data from the <strong id="tableNameDisplay"></strong> table.
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm_table_clear" class="form-label">Type <code id="confirmationText"></code> to confirm:</label>
+                            <input type="text" class="form-control" id="confirm_table_clear" name="confirm_table_clear" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-trash me-1"></i>Clear Table
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Populate Sample Data Modal -->
+    <div class="modal fade" id="populateSampleModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle me-2"></i>Populate Sample Data
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('populate_sample_data') }}">
+                    <div class="modal-body">
+                        <p>This will add sample data to help you test the system:</p>
+                        <ul>
+                            <li>3 Sample suppliers (Philippine tech companies)</li>
+                            <li>12 Sample inventory items with peso pricing</li>
+                            <li>Realistic product categories and SKUs</li>
+                        </ul>
+                        <div class="alert alert-info">
+                            <strong>Note:</strong> This will only add data to empty tables. Existing data will not be affected.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-plus me-1"></i>Add Sample Data
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Individual Record Modal -->
+    <div class="modal fade" id="deleteRecordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-trash me-2"></i>Delete Record
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" id="deleteRecordForm">
+                    <div class="modal-body">
+                        <div class="alert alert-danger">
+                            <strong>WARNING:</strong> Are you sure you want to delete <strong id="recordName"></strong>?
+                        </div>
+                        <p id="deleteWarning" class="text-muted"></p>
+                        <p><strong>This action cannot be undone!</strong></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i>Delete Record
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showClearAllModal() {
+            const modal = new bootstrap.Modal(document.getElementById('clearAllModal'));
+            modal.show();
+        }
+
+        function showClearTableModal(tableName) {
+            const modal = new bootstrap.Modal(document.getElementById('clearTableModal'));
+            const form = document.getElementById('clearTableForm');
+            const tableNameDisplay = document.getElementById('tableNameDisplay');
+            const confirmationText = document.getElementById('confirmationText');
+            const confirmInput = document.getElementById('confirm_table_clear');
+
+            form.action = `/admin/db/clear-table/${tableName}`;
+            tableNameDisplay.textContent = tableName.replace('_', ' ');
+            const confirmText = `DELETE_${tableName.toUpperCase()}`;
+            confirmationText.textContent = confirmText;
+            confirmInput.placeholder = confirmText;
+            confirmInput.value = '';
+
+            modal.show();
+        }
+
+        function showPopulateSampleModal() {
+            const modal = new bootstrap.Modal(document.getElementById('populateSampleModal'));
+            modal.show();
+        }
+
+        function showDeleteRecordModal(tableName, recordId, recordName) {
+            const modal = new bootstrap.Modal(document.getElementById('deleteRecordModal'));
+            const form = document.getElementById('deleteRecordForm');
+            const recordNameEl = document.getElementById('recordName');
+            const deleteWarning = document.getElementById('deleteWarning');
+
+            form.action = `/admin/db/delete-record/${tableName}/${recordId}`;
+            recordNameEl.textContent = recordName;
+
+            // Set appropriate warning based on table
+            const warnings = {
+                'inventory_item': 'This will also delete related sales and stock transactions.',
+                'supplier': 'This will also delete all inventory items and related sales from this supplier.',
+                'sale': 'This will also delete all sale items in this transaction.',
+                'user': 'This will also update related sales and transactions.',
+                'stock_transaction': 'This transaction record will be permanently removed.'
+            };
+
+            deleteWarning.textContent = warnings[tableName] || '';
+            modal.show();
+        }
+    </script>
+</body>
+</html>
